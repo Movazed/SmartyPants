@@ -1,20 +1,23 @@
-import { FC } from "react";
+import React, { FC } from "react";
 import { Button } from "@/components/ui/button";
 
 interface CameraDialogBoxProps {
   show: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  title?: string;
   message?: string;
 }
 
-export const CameraDialogBox: FC<CameraDialogBoxProps> = ({ show, onConfirm, onCancel, message }) => {
+export const CameraDialogBox: FC<CameraDialogBoxProps> = ({ show, onConfirm, onCancel, title, message }) => {
   if (!show) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-[#263238] p-8 rounded-lg shadow-lg text-center max-w-md w-full">
-        <h2 className="text-2xl font-bold text-white mb-4">You went off the camera. Do you want to continue?</h2>
+        <h2 className="text-2xl font-bold text-white mb-4">
+          {title || "You went off the camera. Do you want to continue?"}
+        </h2>
         <p className="text-gray-300 mb-6">{message || ""}</p>
         <div className="flex justify-center space-x-4">
           <Button

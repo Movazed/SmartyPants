@@ -1,10 +1,10 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { HeaderLogin } from "@/sections/Header_login";
-import { FooterLogin } from "@/sections/Footer_login";
 import Sidebar from "@/components/Sidebar"; // Import Sidebar component
-import { TimerDialogBox } from "@/components/TimerDialogBox"; // Import the TimerDialogBox component
+import { TimerDialogBox } from "@/components/TimerDialogBox"; // Import TimerDialogBox component
+import { CameraDialogBox } from "@/components/CameraDialogBox"; // Import CameraDialogBox component
 
 export default function Timer() {
   const [isRunning, setIsRunning] = useState(false);
@@ -13,9 +13,42 @@ export default function Timer() {
   const [activeButton, setActiveButton] = useState<string>("pomodoro");
   const [buttonState, setButtonState] = useState<'start' | 'pause' | 'reset'>('start');
   const [sessionCount, setSessionCount] = useState<number>(1); // Track session count
-  const [showDialog, setShowDialog] = useState<boolean>(false); // State for dialog visibility
+  const [showDialog, setShowDialog] = useState<boolean>(false); // State for timer dialog visibility
+  const [showCameraDialog, setShowCameraDialog] = useState<boolean>(false); // State for camera dialog visibility
 
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Function to start face detection via API
+  const startFaceDetection = async () => {
+    try {
+      await fetch("/api/start_face_detection", {
+        method: "POST",
+      });
+    } catch (error) {
+      console.error("Error starting face detection:", error);
+    }
+  };
+
+  // Polling the server for face detection results
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (isRunning) {
+        try {
+          const response = await fetch("/api/check_face_status");
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          const data = await response.json();
+          if (data.status === "no_face") {
+            setShowCameraDialog(true); // Show the camera dialog if no face is detected
+          }
+        } catch (error) {
+          console.error("Fetch error: ", error);
+        }
+      }
+    }, 1000);
+    return () => clearInterval(interval); // Clean up on unmount
+  }, [isRunning]);
 
   const startTimer = () => {
     if (!isRunning) {
@@ -24,6 +57,7 @@ export default function Timer() {
       } else {
         beginTimer(); // Start timer immediately if not in pomodoro mode
       }
+      startFaceDetection(); // Start face detection when timer starts
     }
   };
 
@@ -86,6 +120,15 @@ export default function Timer() {
     setShowDialog(false); // Just close the dialog
   };
 
+  const handleCameraConfirm = () => {
+    setShowCameraDialog(false); // Close the camera dialog and continue
+  };
+
+  const handleCameraCancel = () => {
+    setShowCameraDialog(false); // Stop the timer or other logic if needed
+    resetTimer(); // Reset the timer when camera detection is declined
+  };
+
   return (
     <>
       <style jsx global>{`
@@ -99,7 +142,7 @@ export default function Timer() {
         }
 
         .animated-background {
-          position: fixed; /* Ensure it stays in place */
+          position: fixed;
           top: 0;
           left: 0;
           width: 100vw;
@@ -107,7 +150,7 @@ export default function Timer() {
           background: linear-gradient(120deg, #E3F2FD, #BBDEFB, #4DD0E1);
           background-size: 300% 300%;
           animation: gradientAnimation 10s ease infinite;
-          z-index: -1; /* Place it behind other content */
+          z-index: -1;
         }
 
         @keyframes gradientAnimation {
@@ -116,7 +159,6 @@ export default function Timer() {
           100% { background-position: 0% 50%; }
         }
 
-        /* Bubble effect */
         .bubble {
           position: absolute;
           bottom: -50px;
@@ -176,11 +218,12 @@ export default function Timer() {
           animation-delay: 8s;
         }
       `}</style>
+      <div className="animated-background"></div> {/* Background animation added */}
+
       <HeaderLogin />
       <div className="flex">
         <Sidebar /> {/* Sidebar component added here */}
-        <div className="flex flex-col items-center justify-center min-h-screen flex-grow">
-          {/* Bubble elements */}
+        <div className="flex flex-col items-center justify-center min-h-screen flex-grow relative">
           <div className="bubble"></div>
           <div className="bubble"></div>
           <div className="bubble"></div>
@@ -279,6 +322,15 @@ export default function Timer() {
         onCancel={handleCancel}
         title="Start Pomodoro Timer"
         message="Are you sure you want to start the Pomodoro timer?"
+      />
+
+      {/* Camera Detection Dialog Box */}
+      <CameraDialogBox
+        show={showCameraDialog}
+        onConfirm={handleCameraConfirm}
+        onCancel={handleCameraCancel}
+        title="No Face Detected"
+        message="We couldn't detect your face. Would you like to continue?"
       />
     </>
   );
