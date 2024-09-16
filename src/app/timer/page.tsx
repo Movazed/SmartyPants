@@ -1,5 +1,4 @@
-"use client"
-
+"use client";
 import { useCallback, useState, useRef, useEffect } from "react";
 import { HeaderLogin } from "@/sections/Header_login";
 import Sidebar from "@/components/Sidebar";
@@ -21,42 +20,87 @@ export default function Timer() {
   const [faceDetectionRunning, setFaceDetectionRunning] = useState(false);
 
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number | null>(null); // Ref to track the start time
+  const faceDetectionPollingRef = useRef<NodeJS.Timeout | null>(null); // Ref for face detection polling
 
-  const startFaceDetection = async () => {
+  const stopFaceDetection = async () => {
     try {
-      await fetch("/api/start_face_detection", { method: "POST" });
-      setFaceDetectionRunning(true);
+      const response = await fetch('/api/face-detection', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: 'stop' }), // Stop the face detection script
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      console.log('Stop face detection response:', data);
     } catch (error) {
-      console.error("Error starting face detection:", error);
+      console.error('Error during stopping face detection:', error);
     }
   };
 
-  const checkFaceDetectionStatus = useCallback(async () => {
-    try {
-      const response = await fetch("/api/check_face_status");
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-      const data = await response.json();
-      if (data.status === "no_face") {
-        pauseTimer(); // Pause the timer when no face is detected
-        setShowCameraDialog(true); // Show the camera dialog to the user
-      }
-    } catch (error) {
-      console.error("Error checking face detection status:", error);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isRunning && faceDetectionRunning) {
-      const interval = setInterval(() => {
-        checkFaceDetectionStatus();
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [isRunning, faceDetectionRunning, checkFaceDetectionStatus]);
-
-  const startTimer = () => {
+  const startTimer = async () => {
     if (!isRunning) {
-      setShowDialog(true); // Trigger Timer Dialog Box
+      // Trigger Timer Dialog Box
+      setShowDialog(true);
+
+      // API call to start face detection
+      try {
+        const response = await fetch('/api/face-detection', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ action: 'start' }), // Updated body content
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        console.log('API response:', data); // Handle API response here
+      } catch (error) {
+        console.error('Error during API call:', error);
+      }
+
+      startTimeRef.current = Date.now(); // Set start time when timer is started
+
+      // Start polling for face detection
+      pollingIntervalRef.current = setInterval(async () => {
+        try {
+          const response = await fetch('/api/face-detection', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+
+          const data = await response.json();
+          console.log('Face detection status:', data);
+
+          // Check if 5 seconds have passed since the timer started
+          const currentTime = Date.now();
+          if (startTimeRef.current && currentTime - startTimeRef.current > 23000) {
+            if (!data.faceDetected) {
+              setShowCameraDialog(true); // Trigger Camera Dialog Box if no face is detected
+              pauseTimer(); // Pause the timer if no face is detected
+            }
+          }
+        } catch (error) {
+          console.error('Error during face detection polling:', error);
+        }
+      }, 2000); // Poll every 2 seconds
     }
   };
 
@@ -79,10 +123,11 @@ export default function Timer() {
         setElapsedTime((prevTime) => prevTime + 1);
       }
     }, 1000);
-    startFaceDetection(); // Start face detection when the timer starts
+    // Optionally handle face detection start here if needed
+    setFaceDetectionRunning(true);
   };
 
-  const resetTimer = () => {
+  const resetTimer = async () => {
     setIsRunning(false);
     setFaceDetectionRunning(false); // Stop face detection
     if (activeButton === "pomodoro") {
@@ -95,6 +140,17 @@ export default function Timer() {
       clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = null;
     }
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    if (faceDetectionPollingRef.current) {
+      clearInterval(faceDetectionPollingRef.current);
+      faceDetectionPollingRef.current = null;
+    }
+
+    // Stop the face detection script
+    await stopFaceDetection();
   };
 
   const pauseTimer = () => {
@@ -103,6 +159,14 @@ export default function Timer() {
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = null;
+    }
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    if (faceDetectionPollingRef.current) {
+      clearInterval(faceDetectionPollingRef.current);
+      faceDetectionPollingRef.current = null;
     }
   };
 
@@ -118,11 +182,40 @@ export default function Timer() {
   const handleCameraConfirm = () => {
     setShowCameraDialog(false);
     beginTimer(); // Continue the timer when the user confirms
+
+    // Start polling for face detection after CameraDialogBox confirmation
+    faceDetectionPollingRef.current = setInterval(async () => {
+      try {
+        const response = await fetch('/api/face-detection', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        console.log('Face detection status:', data);
+
+        if (!data.faceDetected) {
+          setShowCameraDialog(true); // Trigger Camera Dialog Box if no face is detected
+          pauseTimer(); // Pause the timer if no face is detected
+        }
+      } catch (error) {
+        console.error('Error during face detection polling:', error);
+      }
+    }, 2000); // Poll every 2 seconds
   };
 
-  const handleCameraCancel = () => {
+  const handleCameraCancel = async () => {
     setShowCameraDialog(false);
-    resetTimer(); // Reset the timer when the user cancels
+    await resetTimer(); // Reset the timer and stop face detection
+
+    // Ensure the face detection script is stopped
+    await stopFaceDetection();
   };
 
   return (
