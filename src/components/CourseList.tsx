@@ -1,17 +1,24 @@
+// CourseList.tsx
+
 import React from 'react';
 import Image from 'next/image';
 import book1 from "@/assets/book1.png"; // Assuming these are the paths to your book logos
 import book2 from "@/assets/book2.png";
 
-const CourseList: React.FC = () => {
-  const courses = [
-    { name: 'AI/ML and Text to Speech Training Model', progress: 20, modules: 2, quizzes: 3 },
-    { name: 'Crew AI Deployment and Agent Training', progress: 0, modules: 0, quizzes: 0 },
-    { name: 'Basic Data Structure & Algorithm', progress: 100, completed: true, modules: 2, quizzes: 5 },
-    { name: 'Advanced cpp Templates', progress: 10, modules: 2, quizzes: 1 },
-    { name: 'Neural networking and Deep Learning', progress: 50, modules: 5, quizzes: 3 },
-  ];
+interface Course {
+  name: string;
+  progress: number;
+  modules: number;
+  quizzes: number;
+  completed: boolean;
+}
 
+interface CourseListProps {
+  courses: Course[];
+  onUnenroll: (course: string) => void; // Function to handle unenrollment
+}
+
+const CourseList: React.FC<CourseListProps> = ({ courses, onUnenroll }) => {
   return (
     <div className="bg-gray-100 p-4 rounded-md shadow mb-6">
       {courses.map((course, index) => (
@@ -27,7 +34,6 @@ const CourseList: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center mt-2 mb-2">
-            {/* Add logo at the start of the progress bar with the same size */}
             <Image
               src={index % 2 === 0 ? book1 : book2}
               alt={`Book Logo ${index % 2 === 0 ? '1' : '2'}`}
@@ -46,6 +52,12 @@ const CourseList: React.FC = () => {
             <span>{course.modules}/10 Modules</span>
             <span>{course.quizzes}/5 Quizzes</span>
           </div>
+          <button
+            onClick={() => onUnenroll(course.name)}
+            className="mt-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+          >
+            Unenroll
+          </button>
         </div>
       ))}
     </div>
