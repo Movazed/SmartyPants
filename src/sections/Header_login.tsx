@@ -1,11 +1,9 @@
-import ArrowRight from "@/assets/arrow-right.svg";
-import Logo from "@/assets/mascott.png";
-import Image from "next/image";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBell, faCog } from "@fortawesome/free-solid-svg-icons"; // Import the required icons
 import MenuIcon from "@/assets/menu.svg";
 import Avatar from "@/assets/mascott.png"; // Import the avatar image
 import SearchIcon from "@/assets/search.png"; // Import the search icon
-import NotificationIcon from "@/assets/notifications.png"; // Import the notification icon
-import SettingsIcon from "@/assets/settings.png"; // Import the settings icon
+import Image from "next/image";
 import Link from "next/link";
 
 export const HeaderLogin = () => {
@@ -24,7 +22,7 @@ export const HeaderLogin = () => {
               <button className="bg-black text-white px-4 py-2 rounded-lg font-medium align-items justify-center tracking-tight mr-6">
                 Profile
               </button>
-              <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white mr-6">
+              <div className="w-8 h-8 rounded-full overflow-hidden mr-6">
                 <Image src={Avatar} alt="User Avatar" height={32} width={32} className="object-cover" />
               </div>
               <div className="relative flex items-center mr-6">
@@ -43,26 +41,16 @@ export const HeaderLogin = () => {
               </div>
               <div className="relative flex items-center">
                 <button
-                  className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-white mr-2"
+                  className="flex items-center justify-center w-8 h-8 mr-2"
                   aria-label="Notifications"
                 >
-                  <Image
-                    src={NotificationIcon}
-                    alt="Notifications"
-                    height={20}
-                    width={20}
-                  />
+                  <FontAwesomeIcon icon={faBell} className="text-black" /> {/* Font Awesome bell icon */}
                 </button>
                 <button
-                  className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-white"
+                  className="flex items-center justify-center w-8 h-8"
                   aria-label="Settings"
                 >
-                  <Image
-                    src={SettingsIcon}
-                    alt="Settings"
-                    height={20}
-                    width={20}
-                  />
+                  <FontAwesomeIcon icon={faCog} className="text-black" /> {/* Font Awesome cog icon */}
                 </button>
               </div>
             </nav>

@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     }
 
     // Absolute path to the Python script
-    const scriptPath = 'D:\\Projects\\workspace\\SmartyPants\\smarty_pants\\src\\pages\\scripts\\generate_summary.py';
+    const scriptPath = 'C:\\Projects\\workspace\\SmartyPants\\smarty_pants\\src\\pages\\scripts\\generate_summary.py';
     console.log(`Python script path: ${scriptPath}`);
 
     try {

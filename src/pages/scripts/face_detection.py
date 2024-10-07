@@ -9,7 +9,7 @@ from flask import Flask, request
 import sys  # Import sys for system exit
 
 # Path to the status file where the face detection status will be stored
-STATUS_FILE_PATH = 'D:/Projects/workspace/SmartyPants/smarty_pants/src/pages/scripts/face_detection_status.json'
+STATUS_FILE_PATH = 'C:/Projects/workspace/SmartyPants/smarty_pants/src/pages/scripts/face_detection_status.json'
 SERVER_URL = 'http://localhost:3001/api/face-detection'
 
 app = Flask(__name__)

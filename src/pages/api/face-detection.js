@@ -36,7 +36,7 @@ export default async function handler(req, res) {
       }
 
       // Path to the Python script
-      const pythonScriptPath = 'D:/Projects/workspace/SmartyPants/smarty_pants/src/pages/scripts/face_detection.py';
+      const pythonScriptPath = 'C:/Projects/workspace/SmartyPants/smarty_pants/src/pages/scripts/face_detection.py';
 
       // Start the face detection script
       pythonProcess = spawn('python', [pythonScriptPath]);
