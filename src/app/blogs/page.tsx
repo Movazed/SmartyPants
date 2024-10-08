@@ -1,13 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronRight } from "lucide-react";
 import { HeaderLogin } from "@/sections/Header_login";
-import { FooterLogin } from "@/sections/Footer_login";
 import Sidebar from "@/components/Sidebar";
 import Image from "next/image";
 import smartyPantsLogo from "@/assets/smarty_pants_text.png";
 import { motion } from "framer-motion";
+import BlogStyles from "@/components/BlogStyles"; // Importing global styles
 
 type Video = {
   id: number;
@@ -15,7 +14,7 @@ type Video = {
   thumbnail?: string;
   videoUrl?: string;
   externalLink?: string; // External link for each video
-  description?: string;  // Short description field
+  description?: string; // Short description field
 };
 
 const RecursionIntro = () => {
@@ -27,83 +26,11 @@ const RecursionIntro = () => {
 
   return (
     <>
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
-        
-        body {
-          font-family: 'Roboto', sans-serif;
-        }
-
-        .bubbles-container {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-        }
-
-        .bubble {
-          position: absolute;
-          bottom: -50px;
-          background: rgba(255, 255, 255, 0.3);
-          border-radius: 50%;
-          opacity: 0.6;
-          animation: bubbleUp 15s infinite ease-in-out;
-        }
-
-        @keyframes bubbleUp {
-          0% {
-            transform: translateY(0) scale(1);
-            opacity: 0.6;
-          }
-          50% {
-            transform: translateY(-300px) scale(1.2);
-            opacity: 0.8;
-          }
-          100% {
-            transform: translateY(-600px) scale(1.5);
-            opacity: 0;
-          }
-        }
-
-        .bubble:nth-child(1) {
-          width: 80px;
-          height: 80px;
-          left: 10%;
-          animation-duration: 20s;
-        }
-        .bubble:nth-child(2) {
-          width: 120px;
-          height: 120px;
-          left: 30%;
-          animation-duration: 25s;
-          animation-delay: 2s;
-        }
-        .bubble:nth-child(3) {
-          width: 100px;
-          height: 100px;
-          left: 50%;
-          animation-duration: 18s;
-          animation-delay: 4s;
-        }
-        .bubble:nth-child(4) {
-          width: 140px;
-          height: 140px;
-          left: 70%;
-          animation-duration: 22s;
-          animation-delay: 6s;
-        }
-        .bubble:nth-child(5) {
-          width: 90px;
-          height: 90px;
-          left: 90%;
-          animation-duration: 20s;
-          animation-delay: 8s;
-        }
-      `}</style>
+      {/* Apply the global styles */}
+      <BlogStyles />
 
       <div className="min-h-screen bg-gradient-to-b from-blue-300 to-gray-100 flex flex-col relative">
+        {/* Bubbles container */}
         <div className="bubbles-container">
           <div className="bubble"></div>
           <div className="bubble"></div>
@@ -111,12 +38,11 @@ const RecursionIntro = () => {
           <div className="bubble"></div>
           <div className="bubble"></div>
         </div>
+
         <HeaderLogin />
         <div className="flex flex-grow">
           <Sidebar />
           <main className="flex-grow container mx-auto px-4 py-8">
-            {/* Breadcrumb */}
-
             {/* Video Section */}
             <motion.div
               className="bg-white rounded-lg shadow-md overflow-hidden mb-8"
@@ -158,7 +84,7 @@ const RecursionIntro = () => {
               </div>
             </motion.div>
 
-            {/* Related Videos */}
+            {/* Related Videos Section */}
             <h3 className="text-xl font-semibold mb-4">RELATED VIDEOS</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
               {relatedVideos.map(({ id, ...video }) => (
@@ -174,7 +100,6 @@ const RecursionIntro = () => {
             </div>
           </main>
         </div>
-
       </div>
     </>
   );
